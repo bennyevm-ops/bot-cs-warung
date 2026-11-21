@@ -10,7 +10,7 @@ if ! .venv/bin/python -c 'import httpx' 2>/dev/null; then
 fi
 
 # Shop data lives in data/ (git-ignored), so updating the code never touches the owner's edits.
-if [ -z "${WARUNG_CONFIG:-}" ] && ! grep -qs '^WARUNG_CONFIG=' .env; then
+if [ -z "${WARUNG_CONFIG:-}" ] && ! grep -Eqs '^[[:space:]]*WARUNG_CONFIG[[:space:]]*=[[:space:]]*[^[:space:]]' .env; then
   export WARUNG_CONFIG=data/warung.json
   mkdir -p data
   [ -f "$WARUNG_CONFIG" ] || cp config/warung.json "$WARUNG_CONFIG"
