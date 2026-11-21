@@ -40,7 +40,7 @@ def message(text="halo", chat_type="private", chat_id=42, **extra):
 
 def test_send_plain_text_returns_message_id():
     tg, calls = channel(lambda r: ok({"message_id": 77}))
-    assert tg.send(Outgoing("telegram", "42", "halo")) == "77"
+    assert tg.send(Outgoing("telegram", "42", "halo")) == ["77"]
     assert calls == [("sendMessage", {"chat_id": "42", "text": "halo"})]
 
 
@@ -48,7 +48,7 @@ def test_send_splits_text_over_the_telegram_limit():
     ids = iter(range(1, 10))
     tg, calls = channel(lambda r: ok({"message_id": next(ids)}))
     text = "Chat #1 dari Budi:\n\n" + "kata " * 1000 + "\n\nBalas (reply) pesan ini."
-    assert tg.send(Outgoing("telegram", "42", text, buttons=["A"])) == "2"
+    assert tg.send(Outgoing("telegram", "42", text, buttons=["A"])) == ["1", "2"]
     first, second = (body for _, body in calls)
     assert len(first["text"]) <= MAX_TEXT and len(second["text"]) <= MAX_TEXT
     assert first["text"] + second["text"] == text

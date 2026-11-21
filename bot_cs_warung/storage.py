@@ -30,9 +30,13 @@ CREATE TABLE IF NOT EXISTS handoffs (
     chat_id TEXT NOT NULL,
     identity TEXT NOT NULL,
     question TEXT NOT NULL,
-    owner_message_id TEXT,
     answer TEXT,
     answered_ts TEXT
+);
+-- the owner's copies of a handoff; a long one is sent as several messages
+CREATE TABLE IF NOT EXISTS owner_messages (
+    message_id TEXT PRIMARY KEY,
+    handoff_id INTEGER NOT NULL REFERENCES handoffs (id)
 );
 CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 """
@@ -82,7 +86,7 @@ class Store:
     def link_owner_message(self, handoff_id: int, owner_message_id: str) -> None:
         with self.db:
             self.db.execute(
-                "UPDATE handoffs SET owner_message_id = ? WHERE id = ?",
+                "INSERT OR REPLACE INTO owner_messages (message_id, handoff_id) VALUES (?, ?)",
                 (owner_message_id, handoff_id),
             )
 
@@ -91,7 +95,9 @@ class Store:
 
     def handoff_by_owner_message(self, owner_message_id: str) -> sqlite3.Row | None:
         return self.db.execute(
-            "SELECT * FROM handoffs WHERE owner_message_id = ?", (owner_message_id,)
+            "SELECT h.* FROM handoffs h JOIN owner_messages m ON m.handoff_id = h.id"
+            " WHERE m.message_id = ?",
+            (owner_message_id,),
         ).fetchone()
 
     def answer_handoff(self, handoff_id: int, answer: str) -> None:

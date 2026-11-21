@@ -25,12 +25,12 @@ class App:
             try:
                 if channel is None:
                     raise LookupError("channel tidak aktif")
-                message_id = channel.send(out)
+                message_ids = channel.send(out)
             except Exception as exc:
                 log.error("Gagal kirim pesan ke %s: %s", out.channel, exc)
                 follow_up = self.brain.undelivered(out)
             else:
-                follow_up = self.brain.delivered(out, message_id)
+                follow_up = self.brain.delivered(out, message_ids)
             self.deliver(follow_up)
 
     def on_message(self, msg: Incoming) -> None:

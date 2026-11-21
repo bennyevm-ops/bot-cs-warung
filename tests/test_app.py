@@ -10,7 +10,7 @@ class FakeChannel:
 
     def send(self, out):
         self.sent.append(out)
-        return str(500 + len(self.sent))
+        return [str(500 + len(self.sent))]
 
 
 def test_handoff_round_trip_through_channel(brain):
@@ -26,6 +26,20 @@ def test_handoff_round_trip_through_channel(brain):
     assert (channel.sent[2].chat_id, channel.sent[2].text) == ("7", "Dari pemilik: Boleh kak")
     assert channel.sent[3].chat_id == OWNER and "Terkirim" in channel.sent[3].text
     assert len(channel.sent) == 4
+
+
+def test_owner_can_reply_to_any_part_of_a_split_handoff(brain, store):
+    class Splitting(FakeChannel):
+        def send(self, out):
+            self.sent.append(out)
+            return ["901", "902"] if out.handoff_id else ["950"]
+
+    channel = Splitting()
+    app = App(brain, [channel])
+    app.on_message(customer("bisa hutang dulu?", chat_id="7"))
+    app.on_message(owner("Boleh kak", reply_to_id="901"))
+    assert channel.sent[2].text == "Dari pemilik: Boleh kak"
+    assert store.handoff_by_owner_message("902")["id"] == 1
 
 
 def test_failed_reply_is_reported_to_owner_and_can_be_retried(brain, store):

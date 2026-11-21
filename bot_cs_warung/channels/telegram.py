@@ -70,11 +70,12 @@ class TelegramChannel:
             raise TelegramError(f"{method}: {data.get('description', resp.status_code)}")
         return data["result"]
 
-    def send(self, out: Outgoing) -> str | None:
-        """Send a message, in several parts when it is too long. Returns the last part's id."""
+    def send(self, out: Outgoing) -> list[str]:
+        """Send a message, in several parts when it is too long. Returns every part's id."""
         *head, last = split_text(out.text) or [out.text]
-        for part in head:
-            self._call("sendMessage", chat_id=out.chat_id, text=part)
+        ids = [
+            self._call("sendMessage", chat_id=out.chat_id, text=part)["message_id"] for part in head
+        ]
         params: dict = {"chat_id": out.chat_id, "text": last}
         if out.buttons:
             rows = [
@@ -86,8 +87,8 @@ class TelegramChannel:
                     [{"text": label, "callback_data": label} for label in row] for row in rows
                 ]
             }
-        result = self._call("sendMessage", **params)
-        return str(result["message_id"])
+        ids.append(self._call("sendMessage", **params)["message_id"])
+        return [str(i) for i in ids]
 
     def parse_update(self, update: dict) -> Incoming | None:
         """Turn a Telegram update into an Incoming, or None when it is not for the bot."""

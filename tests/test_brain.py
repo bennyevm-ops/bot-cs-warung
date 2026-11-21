@@ -173,7 +173,7 @@ def test_owner_reply_reaches_customer(brain, store):
     assert to_customer.text == "Dari pemilik: Maaf kak, belum bisa ya"
     assert store.get_handoff(forward.handoff_id)["answer"] is None  # not delivered yet
 
-    (confirmation,) = brain.delivered(to_customer, "900")
+    (confirmation,) = brain.delivered(to_customer, ["900"])
     assert confirmation.chat_id == OWNER and "Terkirim" in confirmation.text
     assert store.get_handoff(forward.handoff_id)["answer"] == "Maaf kak, belum bisa ya"
     assert store.daily_stats(brain.today())["owner_replied"] == 1

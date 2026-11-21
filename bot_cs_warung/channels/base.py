@@ -9,8 +9,8 @@ from ..messages import Incoming, Outgoing
 class Channel(Protocol):
     name: str
 
-    def send(self, out: Outgoing) -> str | None:
-        """Deliver a message. Returns the platform message id, if any."""
+    def send(self, out: Outgoing) -> list[str]:
+        """Deliver a message. Returns the platform ids of the message(s) it became."""
 
     def run(self, on_message: Callable[[Incoming], None], on_tick: Callable[[], None]) -> None:
         """Receive messages forever, calling on_tick regularly in between."""

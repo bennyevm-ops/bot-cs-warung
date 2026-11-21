@@ -86,10 +86,11 @@ class Brain:
             return owner.handle(self, msg)
         return self._handle_customer(msg)
 
-    def delivered(self, out: Outgoing, message_id: str | None) -> list[Outgoing]:
+    def delivered(self, out: Outgoing, message_ids: list[str]) -> list[Outgoing]:
         """Called once a channel has sent `out`. Returns follow-up messages."""
-        if out.handoff_id is not None and message_id:
-            self.store.link_owner_message(out.handoff_id, message_id)
+        if out.handoff_id is not None:
+            for message_id in message_ids:
+                self.store.link_owner_message(out.handoff_id, message_id)
         if out.answers_handoff is not None:
             return owner.reply_delivered(self, out)
         return []
