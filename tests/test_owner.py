@@ -25,6 +25,8 @@ def on_disk(knowledge):
         ("/harga permen 500", "permen", 500),
         ("/harga gula merah 17 ribu", "gula merah", 17_000),
         ("/harga@WarungBot teh botol Rp5.000", "teh botol", 5_000),
+        ("/harga kecap Rp 4.000", "kecap", 4_000),
+        ("/harga sirup Rp. 17 ribu", "sirup", 17_000),
     ],
 )
 def test_harga_adds_item_and_persists(brain, knowledge, command, name, price):
@@ -46,7 +48,9 @@ def test_new_price_is_used_for_customers_immediately(brain):
     assert out.text == "rokok surya 12: Rp25.000 kak."
 
 
-@pytest.mark.parametrize("command", ["/harga indomie", "/harga 3500", "/harga indomie nol"])
+@pytest.mark.parametrize(
+    "command", ["/harga indomie", "/harga 3500", "/harga indomie nol", "/harga Rp 3500"]
+)
 def test_harga_bad_input_changes_nothing(brain, knowledge, command):
     before = on_disk(knowledge)
     assert run(brain, command).startswith("Gagal")

@@ -78,8 +78,11 @@ def _split_item_price(args: str) -> tuple[str, int]:
     for take in (2, 1):  # "17 ribu" first, then "17rb"
         if len(parts) > take and (take == 1 or parts[-1].lower() in UNITS):
             price = parse_amount(" ".join(parts[-take:]))
-            if price:
-                return " ".join(parts[:-take]), price
+            name = parts[:-take]
+            if name[-1].lower().rstrip(".") == "rp":  # "Rp 4.000" typed with a space
+                name = name[:-1]
+            if price and name:
+                return " ".join(name), price
     raise ValueError("format: /harga <barang> <harga>, contoh: /harga indomie goreng 3500")
 
 
