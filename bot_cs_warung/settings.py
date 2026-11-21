@@ -28,9 +28,10 @@ class Settings:
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> "Settings":
         env = os.environ if env is None else env
-        token = env.get("TELEGRAM_BOT_TOKEN", "").strip()
+        # TELEGRAM_BOT_TOKEN is the older name and still works.
+        token = (env.get("BOT_TOKEN") or env.get("TELEGRAM_BOT_TOKEN") or "").strip()
         if not token:
-            raise SystemExit("TELEGRAM_BOT_TOKEN belum diisi. Lihat .env.example.")
+            raise SystemExit("BOT_TOKEN belum diisi. Lihat .env.example.")
         return cls(
             telegram_token=token,
             owner_chat_id=env.get("OWNER_CHAT_ID", "").strip() or None,

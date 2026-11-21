@@ -44,32 +44,31 @@ off) is also sent automatically once a day at `jam_ringkasan`.
 
 1. **Create the bot.** In Telegram, open [@BotFather](https://t.me/BotFather), send
    `/newbot`, pick a name and a username, and copy the token it gives you.
-2. **Install** (Python 3.12):
-   ```bash
-   python3.12 -m venv .venv
-   source .venv/bin/activate
-   pip install -e .
-   ```
-3. **Set the environment.** Copy `.env.example` to `.env` and fill it in. `.env` is
+2. **Set the environment.** Copy `.env.example` to `.env` and fill it in. `.env` is
    git-ignored; the token must never be committed.
 
    | Variable | Required | Meaning |
    | --- | --- | --- |
-   | `TELEGRAM_BOT_TOKEN` | yes | Token from BotFather |
+   | `BOT_TOKEN` | yes | Token from BotFather (`TELEGRAM_BOT_TOKEN` also works) |
    | `OWNER_CHAT_ID` | for owner features | Telegram chat id of the owner |
-   | `WARUNG_CONFIG` | no | Shop knowledge file, default `config/warung.json` |
-   | `DB_PATH` | no | SQLite log, default `data/bot.sqlite3` |
    | `LLM_API_BASE`, `LLM_API_KEY`, `LLM_MODEL` | no | OpenAI-compatible endpoint for smart answers; all three must be set |
+   | `WARUNG_CONFIG` | no | Shop knowledge file; `./start.sh` uses `data/warung.json` |
+   | `DB_PATH` | no | SQLite log, default `data/bot.sqlite3` |
 
    To find `OWNER_CHAT_ID`: start the bot with it empty, send the bot any message from
    the owner's Telegram account, and read the `chat id` from the bot's log line. Put it
    in `.env` and restart. The owner has to message the bot once anyway: Telegram bots
    cannot start a conversation.
-4. **Fill in the shop knowledge** in `config/warung.json` (see below).
-5. **Run:**
+3. **Run** (needs Python 3.12):
    ```bash
-   python -m bot_cs_warung
+   ./start.sh
    ```
+   The first run creates `.venv`, installs the bot and copies the sample
+   `config/warung.json` to `data/warung.json`, which is the file the bot then uses.
+4. **Fill in the shop knowledge** in `data/warung.json` (see below), or with the owner
+   commands in the chat.
+
+Running it on a server: see [DEPLOY.md](DEPLOY.md).
 
 ## Shop knowledge: `config/warung.json`
 
@@ -83,8 +82,9 @@ Everything the bot knows comes from this one file; nothing is hardcoded.
 - `harga`: item name → price.
 - `faq`: list of `{ "kata_kunci": [...], "jawaban": "..." }`.
 
-The owner commands write their changes back to this file, so they survive a restart.
-In production, point `WARUNG_CONFIG` at a copy outside the git checkout.
+The owner commands write their changes back to the file in use, so they survive a
+restart. `./start.sh` runs the bot on a copy, `data/warung.json`, which is outside git;
+`config/warung.json` stays the sample.
 
 ## How a customer message is answered
 

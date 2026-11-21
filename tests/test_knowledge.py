@@ -46,6 +46,7 @@ def test_settings_from_env():
     assert (s.telegram_token, s.owner_chat_id) == ("abc", "99")
     assert (s.config_path, s.db_path) == ("config/warung.json", "data/bot.sqlite3")
     assert Settings.from_env({"TELEGRAM_BOT_TOKEN": "abc"}).owner_chat_id is None
+    assert Settings.from_env({"BOT_TOKEN": "xyz"}).telegram_token == "xyz"
     with pytest.raises(SystemExit):
         Settings.from_env({})
 
