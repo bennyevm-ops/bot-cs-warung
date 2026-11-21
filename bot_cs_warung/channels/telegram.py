@@ -12,6 +12,31 @@ log = logging.getLogger(__name__)
 
 API_BASE = "https://api.telegram.org"
 _BUTTONS_PER_ROW = 2
+MAX_TEXT = 4096  # sendMessage limit
+
+
+def _fit(text: str, limit: int) -> int:
+    """How many leading characters fit; astral characters (emoji) count as two to be safe."""
+    units = 0
+    for i, ch in enumerate(text):
+        units += 2 if ord(ch) > 0xFFFF else 1
+        if units > limit:
+            return i
+    return len(text)
+
+
+def split_text(text: str, limit: int = MAX_TEXT) -> list[str]:
+    """Cut text into parts Telegram accepts, at a line or word break when there is one."""
+    parts = []
+    while text:
+        end = _fit(text, limit)
+        if end < len(text):
+            cut = max(text.rfind("\n", 0, end), text.rfind(" ", 0, end))
+            end = cut + 1 if cut > 0 else end
+        if text[:end].strip():
+            parts.append(text[:end])
+        text = text[end:]
+    return parts
 
 
 class TelegramError(Exception):
@@ -46,7 +71,11 @@ class TelegramChannel:
         return data["result"]
 
     def send(self, out: Outgoing) -> str | None:
-        params: dict = {"chat_id": out.chat_id, "text": out.text}
+        """Send a message, in several parts when it is too long. Returns the last part's id."""
+        *head, last = split_text(out.text) or [out.text]
+        for part in head:
+            self._call("sendMessage", chat_id=out.chat_id, text=part)
+        params: dict = {"chat_id": out.chat_id, "text": last}
         if out.buttons:
             rows = [
                 out.buttons[i : i + _BUTTONS_PER_ROW]

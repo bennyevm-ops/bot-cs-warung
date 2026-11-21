@@ -3,7 +3,7 @@ import json
 import httpx
 import pytest
 
-from bot_cs_warung.channels.telegram import TelegramChannel, TelegramError
+from bot_cs_warung.channels.telegram import MAX_TEXT, TelegramChannel, TelegramError, split_text
 from bot_cs_warung.messages import Outgoing
 
 TOKEN = "123456:SECRET-token"
@@ -42,6 +42,34 @@ def test_send_plain_text_returns_message_id():
     tg, calls = channel(lambda r: ok({"message_id": 77}))
     assert tg.send(Outgoing("telegram", "42", "halo")) == "77"
     assert calls == [("sendMessage", {"chat_id": "42", "text": "halo"})]
+
+
+def test_send_splits_text_over_the_telegram_limit():
+    ids = iter(range(1, 10))
+    tg, calls = channel(lambda r: ok({"message_id": next(ids)}))
+    text = "Chat #1 dari Budi:\n\n" + "kata " * 1000 + "\n\nBalas (reply) pesan ini."
+    assert tg.send(Outgoing("telegram", "42", text, buttons=["A"])) == "2"
+    first, second = (body for _, body in calls)
+    assert len(first["text"]) <= MAX_TEXT and len(second["text"]) <= MAX_TEXT
+    assert first["text"] + second["text"] == text
+    assert "reply_markup" not in first and "reply_markup" in second
+    assert second["text"].endswith("Balas (reply) pesan ini.")
+
+
+@pytest.mark.parametrize(
+    ("text", "parts"),
+    [
+        ("halo", ["halo"]),
+        ("", []),
+        ("aaaa bbbb cccc", ["aaaa bbbb ", "cccc"]),
+        ("aaaaaaaaaaaaaaa", ["aaaaaaaaaa", "aaaaa"]),
+        ("aaaa\nbbbb cc dd", ["aaaa\nbbbb ", "cc dd"]),
+        ("😀😀😀😀😀😀", ["😀😀😀😀😀", "😀"]),  # an emoji counts as two
+        ("aaaaaaaaaa          ", ["aaaaaaaaaa"]),
+    ],
+)
+def test_split_text(text, parts):
+    assert split_text(text, limit=10) == parts
 
 
 def test_send_buttons_as_inline_keyboard():
