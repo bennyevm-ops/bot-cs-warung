@@ -33,6 +33,9 @@ _INFO_FIELDS = {
 }
 
 
+_REPLY_PREFIX = "Dari pemilik: "
+
+
 def handle(brain, msg: Incoming) -> list[Outgoing]:
     text = msg.text.strip()
     if text.startswith("/"):
@@ -53,13 +56,32 @@ def handle(brain, msg: Incoming) -> list[Outgoing]:
 
 
 def _reply_to_customer(brain, handoff, text: str) -> list[Outgoing]:
-    brain.store.answer_handoff(handoff["id"], text)
-    brain.store.log_message(
-        brain.today(), handoff["channel"], handoff["chat_id"], "out", text, source="owner"
-    )
+    """The handoff is only marked answered once this message is delivered."""
     return [
-        Outgoing(handoff["channel"], handoff["chat_id"], f"Dari pemilik: {text}"),
-        brain.to_owner(f"Terkirim ke {handoff['identity']}."),
+        Outgoing(
+            handoff["channel"],
+            handoff["chat_id"],
+            _REPLY_PREFIX + text,
+            answers_handoff=handoff["id"],
+        )
+    ]
+
+
+def reply_delivered(brain, out: Outgoing) -> list[Outgoing]:
+    handoff = brain.store.get_handoff(out.answers_handoff)
+    text = out.text.removeprefix(_REPLY_PREFIX)
+    brain.store.answer_handoff(handoff["id"], text)
+    brain.store.log_message(brain.today(), out.channel, out.chat_id, "out", text, source="owner")
+    return [brain.to_owner(f"Terkirim ke {handoff['identity']}.")]
+
+
+def reply_failed(brain, out: Outgoing) -> list[Outgoing]:
+    handoff = brain.store.get_handoff(out.answers_handoff)
+    return [
+        brain.to_owner(
+            f"Gagal kirim ke {handoff['identity']}, jawabannya belum sampai. "
+            f"Coba lagi: /balas {handoff['id']} <jawaban>."
+        )
     ]
 
 

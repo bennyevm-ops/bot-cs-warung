@@ -26,3 +26,4 @@ class Outgoing:
     text: str
     buttons: list[str] = field(default_factory=list)
     handoff_id: int | None = None  # set on the copy forwarded to the owner
+    answers_handoff: int | None = None  # set on the owner's reply to the customer

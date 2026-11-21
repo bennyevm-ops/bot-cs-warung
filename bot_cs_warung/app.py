@@ -22,16 +22,16 @@ class App:
     def deliver(self, outgoing: list[Outgoing]) -> None:
         for out in outgoing:
             channel = self.channels.get(out.channel)
-            if channel is None:
-                log.error("Channel %s tidak aktif, pesan tidak terkirim", out.channel)
-                continue
             try:
+                if channel is None:
+                    raise LookupError("channel tidak aktif")
                 message_id = channel.send(out)
             except Exception as exc:
                 log.error("Gagal kirim pesan ke %s: %s", out.channel, exc)
-                continue
-            if out.handoff_id is not None and message_id:
-                self.brain.store.link_owner_message(out.handoff_id, message_id)
+                follow_up = self.brain.undelivered(out)
+            else:
+                follow_up = self.brain.delivered(out, message_id)
+            self.deliver(follow_up)
 
     def on_message(self, msg: Incoming) -> None:
         if not self.brain.owner_chat_id:

@@ -168,10 +168,25 @@ def test_owner_reply_reaches_customer(brain, store):
     store.link_owner_message(forward.handoff_id, "555")
 
     outs = brain.handle(owner("Maaf kak, belum bisa ya", reply_to_id="555"))
-    assert outs[0].chat_id == "7"
-    assert outs[0].text == "Dari pemilik: Maaf kak, belum bisa ya"
-    assert outs[1].chat_id == OWNER and "Terkirim" in outs[1].text
+    (to_customer,) = outs
+    assert to_customer.chat_id == "7"
+    assert to_customer.text == "Dari pemilik: Maaf kak, belum bisa ya"
+    assert store.get_handoff(forward.handoff_id)["answer"] is None  # not delivered yet
+
+    (confirmation,) = brain.delivered(to_customer, "900")
+    assert confirmation.chat_id == OWNER and "Terkirim" in confirmation.text
     assert store.get_handoff(forward.handoff_id)["answer"] == "Maaf kak, belum bisa ya"
+    assert store.daily_stats(brain.today())["owner_replied"] == 1
+
+
+def test_owner_is_told_when_reply_was_not_delivered(brain, store):
+    forward = brain.handle(customer("bisa hutang dulu?", chat_id="7"))[0]
+    (to_customer,) = brain.handle(owner(f"/balas {forward.handoff_id} boleh kak"))
+
+    (notice,) = brain.undelivered(to_customer)
+    assert notice.chat_id == OWNER and notice.text.startswith("Gagal kirim")
+    assert store.get_handoff(forward.handoff_id)["answer"] is None
+    assert store.daily_stats(brain.today())["owner_replied"] == 0
 
 
 def test_owner_can_reply_by_number(brain):
