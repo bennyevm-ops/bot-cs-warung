@@ -89,6 +89,9 @@ def test_ask_returns_none_on_network_error():
         ("Indomie Goreng Rp4.000 kak.", False),
         ("Biayanya 10rb kak.", False),
         ("Sekitar 1,5jt kak.", False),
+        ("Permen Rp500 kak.", False),
+        ("Cuma 0,5rb kak.", False),
+        ("Permen 500 aja kak.", False),
     ],
 )
 def test_is_grounded(answer, grounded):

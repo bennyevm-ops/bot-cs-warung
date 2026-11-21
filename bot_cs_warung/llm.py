@@ -21,14 +21,16 @@ _SYSTEM = (
     "DATA WARUNG:\n"
 )
 
-# Smaller numbers are quantities or hours, not prices.
-_MIN_MONEY = 1_000
+# A smaller number without "Rp" or a unit is a quantity or an hour, not a price.
+_MIN_BARE_MONEY = 100
 
 
 def is_grounded(answer: str, *sources: str) -> bool:
     """True when every rupiah amount in the answer also appears in the sources."""
     known = {a.value for src in sources for a in find_amounts(src)}
-    return all(a.value in known for a in find_amounts(answer) if a.value >= _MIN_MONEY)
+    return all(
+        a.value in known for a in find_amounts(answer) if a.explicit or a.value >= _MIN_BARE_MONEY
+    )
 
 
 class LLMClient:
