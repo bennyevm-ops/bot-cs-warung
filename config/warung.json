@@ -1,0 +1,53 @@
+{
+  "profil": {
+    "nama": "Warung Berkah",
+    "jam_buka": "Setiap hari 06.00 - 21.00 WIB",
+    "lokasi": "Jl. Mawar No. 12, sebelah musala (patokan: gapura RT 03)",
+    "layanan": [
+      "Sembako & kebutuhan harian",
+      "Transfer antar bank",
+      "Tarik tunai",
+      "Pulsa & paket data",
+      "Token listrik"
+    ],
+    "zona_waktu": "Asia/Jakarta",
+    "jam_ringkasan": "21:00"
+  },
+  "tarif": {
+    "kelipatan": 500000,
+    "biaya_per_kelipatan": 5000,
+    "maks_kelipatan": 10,
+    "biaya_minimum": 5000,
+    "batas_flat": 4500000,
+    "biaya_flat": 50000
+  },
+  "harga": {
+    "Indomie Goreng": 3500,
+    "Indomie Soto": 3500,
+    "Beras 5kg": 75000,
+    "Gula Pasir 1kg": 17000,
+    "Minyak Goreng 1L": 18000,
+    "Telur Ayam 1kg": 28000,
+    "Air Mineral 600ml": 4000,
+    "Kopi Sachet": 2000,
+    "Gas Elpiji 3kg": 22000
+  },
+  "faq": [
+    {
+      "kata_kunci": ["bank apa", "bank mana", "ke bank", "antar bank"],
+      "jawaban": "Bisa transfer ke semua bank kak: BRI, BCA, Mandiri, BNI, BSI, dan bank lain. Bisa juga ke e-wallet (DANA, OVO, GoPay)."
+    },
+    {
+      "kata_kunci": ["tarik tunai", "tartun", "ambil uang", "gesek tunai"],
+      "jawaban": "Bisa tarik tunai di sini kak. Tinggal sebut nominalnya, nanti saya hitungin biayanya."
+    },
+    {
+      "kata_kunci": ["pulsa", "paketan", "paket data", "kuota"],
+      "jawaban": "Ada kak, pulsa dan paket data semua operator. Harganya tanya pemilik dulu ya, tinggal pencet Chat Pemilik."
+    },
+    {
+      "kata_kunci": ["qris", "scan", "non tunai", "cashless"],
+      "jawaban": "Bisa bayar pakai QRIS kak, tinggal scan di kasir."
+    }
+  ]
+}
