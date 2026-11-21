@@ -127,10 +127,11 @@ class Brain:
             return text, MENU, "menu", []
         if choice:
             return self._menu_answer(choice), MENU, "menu", []
-        if words and all(w in _GREETINGS for w in words):
-            return self._greeting(), MENU, "greeting", []
-        if not awaiting_owner and (answer := self._answer(msg.text, words)):
-            return *answer, []
+        if not awaiting_owner:
+            if words and all(w in _GREETINGS for w in words):
+                return self._greeting(), MENU, "greeting", []
+            if answer := self._answer(msg.text, words):
+                return *answer, []
         source = "chat_pemilik" if awaiting_owner else "unknown"
         text, forwards = self._handoff(msg, day)
         return text, HANDOFF, source, forwards

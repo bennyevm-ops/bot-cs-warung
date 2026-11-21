@@ -156,6 +156,13 @@ def test_chat_pemilik_forwards_next_message_even_if_answerable(brain, store):
     assert reply(brain, "indomie goreng").text == "Indomie Goreng: Rp3.500 kak."
 
 
+def test_chat_pemilik_forwards_a_greeting_too(brain, store):
+    reply(brain, "Chat Pemilik")
+    outs = brain.handle(customer("halo"))
+    assert [o.chat_id for o in outs] == [OWNER, "1"]
+    assert tuple(last_log(store)) == (HANDOFF, "chat_pemilik")
+
+
 def test_owner_reply_reaches_customer(brain, store):
     forward = brain.handle(customer("bisa hutang dulu?", chat_id="7"))[0]
     store.link_owner_message(forward.handoff_id, "555")
