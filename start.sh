@@ -3,8 +3,9 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-if [ ! -x .venv/bin/python ]; then
-  "${PYTHON:-python3.12}" -m venv .venv
+# Installs on first run, and again if an earlier install did not finish.
+if ! .venv/bin/python -c 'import httpx' 2>/dev/null; then
+  [ -x .venv/bin/python ] || "${PYTHON:-python3.12}" -m venv .venv
   .venv/bin/pip install --quiet -e .
 fi
 
